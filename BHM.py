@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -93,20 +94,15 @@ gauge.update_layout(paper_bgcolor="#0d1117", font={"color":"#00FFEF"})
 st.plotly_chart(gauge, use_container_width=True)
 
 # -------------------- VIBRATION + SLOPE --------------------
+col_a, col_b = st.columns(2)
+
 with col_a:
     st.subheader("📈 Vibration Trend")
-    fig_vibration = px.line(
-        df, x="Timestamp", y="Vibration", markers=True,
-        title="Vibration Levels", line_shape="spline",
-        color_discrete_sequence=["orange"]
-    )
-    fig_vibration.update_layout(
-        template="plotly_dark",
-        plot_bgcolor="#0d1117", paper_bgcolor="#0d1117"
-    )
-
-    
-
+    fig_vibration = px.line(df, x="Timestamp", y="Vibration", markers=True,
+                            title="Vibration Levels", line_shape="spline",
+                            color_discrete_sequence=["orange"])
+    fig_vibration.update_layout(template="plotly_dark",
+                                plot_bgcolor="#0d1117", paper_bgcolor="#0d1117")
     st.plotly_chart(fig_vibration, use_container_width=True)
 
 with col_b:
@@ -130,18 +126,7 @@ heat_fig = px.imshow(
     origin="lower",
     aspect="auto",
     labels=dict(color="Temperature / Risk Level"),
-    title="Thermal Activity Heatmap",
-    zmin=0,
-    zmax=100
-)
-
-# Add custom labels to colorbar
-heat_fig.update_coloraxes(
-    colorbar=dict(
-        title="Temperature / Risk Level",
-        tickvals=[0, 100],
-        ticktext=["Low", "High"]
-    )
+    title="Thermal Activity Heatmap"
 )
 
 sensor_x = np.random.randint(0, 20, 6)
@@ -168,6 +153,35 @@ alerts = df.tail(5).copy()
 alerts["Action"] = np.where(alerts["Risk"]>70,"🔴 Evacuation",
                      np.where(alerts["Risk"]>40,"🟡 Warning","🟢 Monitoring"))
 st.dataframe(alerts, use_container_width=True)
+
+# -------------------- RISK DISTRIBUTION BAR --------------------
+st.subheader("📊 Risk Distribution (High vs Low)")
+df["Risk_Level"] = np.where(df["Risk"] > 70, "High Risk",
+                     np.where(df["Risk"] > 40, "Medium Risk", "Low Risk"))
+
+risk_counts = df["Risk_Level"].value_counts().reset_index()
+risk_counts.columns = ["Risk_Level", "Count"]
+
+fig_risk_bar = px.bar(
+    risk_counts,
+    x="Risk_Level",
+    y="Count",
+    color="Risk_Level",
+    title="Risk Level Distribution",
+    color_discrete_map={
+        "Low Risk": "green",
+        "Medium Risk": "yellow",
+        "High Risk": "red"
+    },
+    text="Count"
+)
+
+fig_risk_bar.update_layout(
+    template="plotly_dark",
+    plot_bgcolor="#0d1117",
+    paper_bgcolor="#0d1117"
+)
+st.plotly_chart(fig_risk_bar, use_container_width=True)
 
 # -------------------- MANUAL ALERT --------------------
 st.subheader("📢 Trigger Manual Alert")
