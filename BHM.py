@@ -126,8 +126,7 @@ heat_fig = px.imshow(
     aspect="auto",
     labels=dict(color="Temperature / Risk Level"),
     title="Thermal Activity Heatmap",
-   zmin=0,
-    zmax=100
+   
 )
 
 sensor_x = np.random.randint(0, 20, 6)
