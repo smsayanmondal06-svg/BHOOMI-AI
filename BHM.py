@@ -105,15 +105,7 @@ with col_a:
         plot_bgcolor="#0d1117", paper_bgcolor="#0d1117"
     )
 
-    # ⬇️ ADD THE HIGH / LOW LINES OR MARKERS HERE
-    fig_vibration.add_hline(
-        y=0.2, line_dash="dot", line_color="green",
-        annotation_text="Low", annotation_position="bottom right"
-    )
-    fig_vibration.add_hline(
-        y=0.8, line_dash="dot", line_color="red",
-        annotation_text="High", annotation_position="top right"
-    )
+    
 
     st.plotly_chart(fig_vibration, use_container_width=True)
 
