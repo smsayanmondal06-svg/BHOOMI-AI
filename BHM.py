@@ -143,11 +143,7 @@ heat_fig.update_layout(
     template="plotly_dark",
     plot_bgcolor="#0d1117",
     paper_bgcolor="#0d1117"
-)data = np.random.randint(10, 100, (20, 20))
-
-fig = px.imshow(data, color_continuous_scale="plasma",
-                zmin=20, zmax=80, 
-                labels={'color':'Temperature / Risk Level'})
+)
 st.plotly_chart(heat_fig, use_container_width=True)
 
 # -------------------- ALERTS LOG --------------------
