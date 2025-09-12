@@ -128,8 +128,10 @@ heat_fig = px.imshow(
     title="Thermal Activity Heatmap",
     zmin=0,
     zmax=100
-   
-)heat_fig.update_coloraxes(
+)
+
+# Add custom labels to colorbar
+heat_fig.update_coloraxes(
     colorbar=dict(
         title="Temperature / Risk Level",
         tickvals=[0, 100],
