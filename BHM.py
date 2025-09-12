@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -21,7 +20,7 @@ st.markdown("""
 
 st.title("🤖 BHOOMI Safety Interface")
 st.markdown("### AI-Powered Rockfall Prediction & Alert System")
-st.markdown("*System Status:* 🔵 Online | *Mode:* Multimodal Fusion Active")
+st.markdown("System Status: 🔵 Online | Mode: Multimodal Fusion Active")
 st.divider()
 
 # -------------------- DATA SOURCE --------------------
@@ -126,7 +125,18 @@ heat_fig = px.imshow(
     origin="lower",
     aspect="auto",
     labels=dict(color="Temperature / Risk Level"),
-    title="Thermal Activity Heatmap"
+    title="Thermal Activity Heatmap",
+    zmin=0,
+    zmax=100
+)
+
+# Add custom labels to colorbar
+heat_fig.update_coloraxes(
+    colorbar=dict(
+        title="Temperature / Risk Level",
+        tickvals=[0, 100],
+        ticktext=["Low", "High"]
+    )
 )
 
 sensor_x = np.random.randint(0, 20, 6)
@@ -154,35 +164,6 @@ alerts["Action"] = np.where(alerts["Risk"]>70,"🔴 Evacuation",
                      np.where(alerts["Risk"]>40,"🟡 Warning","🟢 Monitoring"))
 st.dataframe(alerts, use_container_width=True)
 
-# -------------------- RISK DISTRIBUTION BAR --------------------
-st.subheader("📊 Risk Distribution (High vs Low)")
-df["Risk_Level"] = np.where(df["Risk"] > 70, "High Risk",
-                     np.where(df["Risk"] > 40, "Medium Risk", "Low Risk"))
-
-risk_counts = df["Risk_Level"].value_counts().reset_index()
-risk_counts.columns = ["Risk_Level", "Count"]
-
-fig_risk_bar = px.bar(
-    risk_counts,
-    x="Risk_Level",
-    y="Count",
-    color="Risk_Level",
-    title="Risk Level Distribution",
-    color_discrete_map={
-        "Low Risk": "green",
-        "Medium Risk": "yellow",
-        "High Risk": "red"
-    },
-    text="Count"
-)
-
-fig_risk_bar.update_layout(
-    template="plotly_dark",
-    plot_bgcolor="#0d1117",
-    paper_bgcolor="#0d1117"
-)
-st.plotly_chart(fig_risk_bar, use_container_width=True)
-
 # -------------------- MANUAL ALERT --------------------
 st.subheader("📢 Trigger Manual Alert")
 if st.button("🚨 SEND ALERT NOW"):
@@ -205,4 +186,4 @@ st_autorefresh(interval=60 * 1000, key="auto_refresh")
 
 # -------------------- FOOTER --------------------
 st.markdown("---")
-st.markdown("🧠 *BHOOMI Safety Core v3.1* | Live + CSV + Alerts + Forecast + Heatmap | TEAM BHOOMI ⚡")
+st.markdown("🧠 BHOOMI Safety Core v3.1 | Live + CSV + Alerts + Forecast + Heatmap | TEAM BHOOMI ⚡")
