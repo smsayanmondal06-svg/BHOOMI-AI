@@ -93,15 +93,28 @@ gauge.update_layout(paper_bgcolor="#0d1117", font={"color":"#00FFEF"})
 st.plotly_chart(gauge, use_container_width=True)
 
 # -------------------- VIBRATION + SLOPE --------------------
-col_a, col_b = st.columns(2)
-
 with col_a:
     st.subheader("📈 Vibration Trend")
-    fig_vibration = px.line(df, x="Timestamp", y="Vibration", markers=True,
-                            title="Vibration Levels", line_shape="spline",
-                            color_discrete_sequence=["orange"])
-    fig_vibration.update_layout(template="plotly_dark",
-                                plot_bgcolor="#0d1117", paper_bgcolor="#0d1117")
+    fig_vibration = px.line(
+        df, x="Timestamp", y="Vibration", markers=True,
+        title="Vibration Levels", line_shape="spline",
+        color_discrete_sequence=["orange"]
+    )
+    fig_vibration.update_layout(
+        template="plotly_dark",
+        plot_bgcolor="#0d1117", paper_bgcolor="#0d1117"
+    )
+
+    # ⬇️ ADD THE HIGH / LOW LINES OR MARKERS HERE
+    fig_vibration.add_hline(
+        y=0.2, line_dash="dot", line_color="green",
+        annotation_text="Low", annotation_position="bottom right"
+    )
+    fig_vibration.add_hline(
+        y=0.8, line_dash="dot", line_color="red",
+        annotation_text="High", annotation_position="top right"
+    )
+
     st.plotly_chart(fig_vibration, use_container_width=True)
 
 with col_b:
