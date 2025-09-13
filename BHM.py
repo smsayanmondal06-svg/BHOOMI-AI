@@ -202,7 +202,8 @@ heat_fig.update_layout(
 
 # Show chart in Streamlit
 st.plotly_chart(heat_fig, use_container_width=True)
--------------- ALERTS LOG --------------------
+
+#-------------- ALERTS LOG --------------------
 st.subheader("🚨 Alerts Log")
 alerts = df.tail(5).copy()
 alerts["Action"] = np.where(alerts["Risk"]>70,"🔴 Evacuation",
