@@ -142,14 +142,15 @@ heat_data = np.random.normal(loc=current_risk, scale=15, size=(20, 20))
 heat_data = np.clip(heat_data, 0, 100)
 
 # Example sensor positions
-sensors = {
-    "Sensor1": (3, 15),
-    "Sensor2": (5, 12),
-    "Sensor3": (16, 5),
-    "Sensor4": (18, 14),
-    "Sensor5": (10, 8),
-    "Sensor6": (14, 6),
-}
+sensor_x = np.random.randint(0, 100, 6)
+sensor_y = np.random.randint(0, 100, 6)
+heat_fig.add_trace(go.Scatter(
+    x=sensor_x, y=sensor_y,
+    mode="markers+text",
+    marker=dict(size=12, color="white", symbol="x"),
+    text=[f"Sensor {i+1}" for i in range(6)],
+    textposition="top center"
+))
 
 # Heatmap
 heat_fig = go.Figure(data=go.Heatmap(
