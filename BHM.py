@@ -183,7 +183,7 @@ heat_fig.add_hrect(
     annotation_text="Low Risk", annotation_position="bottom left"
 )
 heat_fig.add_hrect(
-    y0=high_threshold, y1=100,
+    y0=high_threshold, y1=40,
     fillcolor="red", opacity=0.1, line_width=0,
     annotation_text="High Risk", annotation_position="top left"
 )
