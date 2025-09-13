@@ -114,10 +114,8 @@ with col_a:
                             color_discrete_sequence=["orange"])
     fig_vibration.update_layout(template="plotly_dark",
                                 plot_bgcolor="#0d1117", paper_bgcolor="#0d1117")
-    fig_vibration.add_hrect(y0=vib_min, y1=vib_low, fillcolor="green", opacity=0.2, line_width=0,
-                            annotation_text="Low", annotation_position="left")
-    fig_vibration.add_hrect(y0=vib_high, y1=vib_max, fillcolor="red", opacity=0.2, line_width=0,
-                            annotation_text="High", annotation_position="left")
+    fig_vibration.add_hrect(y0=vib_min, y1=vib_low, fillcolor="green", opacity=0.2, line_width=0, annotation_text="Low", annotation_position="left")
+    fig_vibration.add_hrect(y0=vib_high, y1=vib_max, fillcolor="red", opacity=0.2, line_width=0, annotation_text="High", annotation_position="left")
     st.plotly_chart(fig_vibration, use_container_width=True)
 
 # --- Slope ---
@@ -133,21 +131,25 @@ with col_b:
                         color_discrete_sequence=["lime"])
     fig_slope.update_layout(template="plotly_dark",
                             plot_bgcolor="#0d1117", paper_bgcolor="#0d1117")
-    fig_slope.add_hrect(y0=slope_min, y1=slope_low, fillcolor="green", opacity=0.2, line_width=0,
-                        annotation_text="Low", annotation_position="left")
-    fig_slope.add_hrect(y0=slope_high, y1=slope_max, fillcolor="red", opacity=0.2, line_width=0,
-                        annotation_text="High", annotation_position="left")
+    fig_slope.add_hrect(y0=slope_min, y1=slope_low, fillcolor="green", opacity=0.2, line_width=0, annotation_text="Low", annotation_position="left")
+    fig_slope.add_hrect(y0=slope_high, y1=slope_max, fillcolor="red", opacity=0.2, line_width=0, annotation_text="High", annotation_position="left")
     st.plotly_chart(fig_slope, use_container_width=True)
 
-# -------------------- THERMAL HEATMAP (Simplified) --------------------
-st.subheader("🌡 Thermal Heatmap with Sensor Hotspots")
+# -------------------- THERMAL HEATMAP WITH SENSOR OVERLAY --------------------
+st.subheader("🌡 Thermal Heatmap with Sensor Positions")
 
-# Generate heatmap data (0–100 risk values)
 heat_data = np.random.normal(loc=current_risk, scale=15, size=(20, 20))
 heat_data = np.clip(heat_data, 0, 100)
 
+sensors = {
+    "S1": (3, 15),
+    "S2": (5, 12),
+    "S3": (16, 5),
+    "S4": (18, 14),
+    "S5": (10, 8),
+    "S6": (14, 6),
+}
 
-# Create cleaner heatmap
 heat_fig = go.Figure(data=go.Heatmap(
     z=heat_data,
     colorscale="Viridis",
@@ -159,18 +161,16 @@ heat_fig = go.Figure(data=go.Heatmap(
     )
 ))
 
-# Overlay sensor markers with labels
 for name, (x, y) in sensors.items():
     heat_fig.add_trace(go.Scatter(
         x=[x], y=[y],
         mode="markers+text",
-        marker=dict(size=14, color="white", symbol="x"),
+        marker=dict(size=12, color="white", symbol="x"),
         text=[name],
         textposition="top center",
         name=name
     ))
 
-# Layout adjustments
 heat_fig.update_layout(
     title="Thermal Activity Heatmap",
     template="plotly_dark",
@@ -178,7 +178,7 @@ heat_fig.update_layout(
     paper_bgcolor="#0d1117",
     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
     yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", showticklabels=False),
-    height=500
+    height=600
 )
 
 st.plotly_chart(heat_fig, use_container_width=True)
@@ -236,8 +236,7 @@ fig_workers.add_trace(go.Scattermapbox(
     textposition="top right",
     textfont=dict(color="black")
 ))
-fig_workers.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0},
-                          paper_bgcolor="#0d1117", font=dict(color="white"))
+fig_workers.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor="#0d1117", font=dict(color="white"))
 st.plotly_chart(fig_workers, use_container_width=True)
 
 if st.button("📢 Alert Workers Near Restricted Area"):
