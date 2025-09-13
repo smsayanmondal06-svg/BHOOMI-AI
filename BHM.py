@@ -75,26 +75,27 @@ st.divider()
 
 # -------------------- DYNAMIC RISK GAUGE --------------------
 st.subheader("🧭 Risk Gauge")
-risk_min, risk_max = df["Risk"].min(), df["Risk"].max()
-risk_range = risk_max - risk_min
-risk_low = risk_min + 0.3 * risk_range
-risk_high = risk_min + 0.7 * risk_range
 
 gauge = go.Figure(go.Indicator(
-    mode="gauge+number+delta",
+    mode="gauge+number",
     value=current_risk,
-    title={"text":"Current Risk %"},
+    title={"text": "Current Risk %"},
     gauge={
-        "axis":{"range":[0,100]},
-        "bar":{"color":"cyan"},
-        "steps":[
-            {"range":[0,risk_low],"color":"green"},
-            {"range":[risk_low,risk_high],"color":"yellow"},
-            {"range":[risk_high,100],"color":"red"}
+        "axis": {"range": [0, 100]},
+        "bar": {"color": "cyan"},
+        "steps": [
+            {"range": [0, 40], "color": "green"},   # Low
+            {"range": [40, 70], "color": "yellow"}, # Medium
+            {"range": [70, 100], "color": "red"}    # High
         ]
     }
 ))
-gauge.update_layout(paper_bgcolor="#0d1117", font={"color":"#00FFEF"})
+
+gauge.update_layout(
+    paper_bgcolor="#0d1117",
+    font={"color": "#00FFEF"}
+)
+
 st.plotly_chart(gauge, use_container_width=True)
 
 # -------------------- VIBRATION + SLOPE --------------------
@@ -113,8 +114,10 @@ with col_a:
                             color_discrete_sequence=["orange"])
     fig_vibration.update_layout(template="plotly_dark",
                                 plot_bgcolor="#0d1117", paper_bgcolor="#0d1117")
-    fig_vibration.add_hrect(y0=vib_min, y1=vib_low, fillcolor="green", opacity=0.2, line_width=0, annotation_text="Low", annotation_position="left")
-    fig_vibration.add_hrect(y0=vib_high, y1=vib_max, fillcolor="red", opacity=0.2, line_width=0, annotation_text="High", annotation_position="left")
+    fig_vibration.add_hrect(y0=vib_min, y1=vib_low, fillcolor="green", opacity=0.2, line_width=0,
+                            annotation_text="Low", annotation_position="left")
+    fig_vibration.add_hrect(y0=vib_high, y1=vib_max, fillcolor="red", opacity=0.2, line_width=0,
+                            annotation_text="High", annotation_position="left")
     st.plotly_chart(fig_vibration, use_container_width=True)
 
 # --- Slope ---
@@ -130,29 +133,30 @@ with col_b:
                         color_discrete_sequence=["lime"])
     fig_slope.update_layout(template="plotly_dark",
                             plot_bgcolor="#0d1117", paper_bgcolor="#0d1117")
-    fig_slope.add_hrect(y0=slope_min, y1=slope_low, fillcolor="green", opacity=0.2, line_width=0, annotation_text="Low", annotation_position="left")
-    fig_slope.add_hrect(y0=slope_high, y1=slope_max, fillcolor="red", opacity=0.2, line_width=0, annotation_text="High", annotation_position="left")
+    fig_slope.add_hrect(y0=slope_min, y1=slope_low, fillcolor="green", opacity=0.2, line_width=0,
+                        annotation_text="Low", annotation_position="left")
+    fig_slope.add_hrect(y0=slope_high, y1=slope_max, fillcolor="red", opacity=0.2, line_width=0,
+                        annotation_text="High", annotation_position="left")
     st.plotly_chart(fig_slope, use_container_width=True)
 
 # -------------------- THERMAL HEATMAP (Simplified) --------------------
 st.subheader("🌡 Thermal Heatmap with Sensor Hotspots")
 
-# Generate heatmap data
+# Generate heatmap data (0–100 risk values)
 heat_data = np.random.normal(loc=current_risk, scale=15, size=(20, 20))
 heat_data = np.clip(heat_data, 0, 100)
 
 # Example sensor positions
-sensor_x = np.random.randint(0, 100, 6)
-sensor_y = np.random.randint(0, 100, 6)
-heat_fig.add_trace(go.Scatter(
-    x=sensor_x, y=sensor_y,
-    mode="markers+text",
-    marker=dict(size=12, color="white", symbol="x"),
-    text=[f"Sensor {i+1}" for i in range(6)],
-    textposition="top center"
-))
+sensors = {
+    "Sensor1": (3, 15),
+    "Sensor2": (5, 12),
+    "Sensor3": (16, 5),
+    "Sensor4": (18, 14),
+    "Sensor5": (10, 8),
+    "Sensor6": (14, 6),
+}
 
-# Heatmap
+# Create cleaner heatmap
 heat_fig = go.Figure(data=go.Heatmap(
     z=heat_data,
     colorscale="Viridis",
@@ -164,7 +168,7 @@ heat_fig = go.Figure(data=go.Heatmap(
     )
 ))
 
-# Overlay sensors
+# Overlay sensor markers with labels
 for name, (x, y) in sensors.items():
     heat_fig.add_trace(go.Scatter(
         x=[x], y=[y],
@@ -175,7 +179,7 @@ for name, (x, y) in sensors.items():
         name=name
     ))
 
-# Layout
+# Layout adjustments
 heat_fig.update_layout(
     title="Thermal Activity Heatmap",
     template="plotly_dark",
@@ -241,7 +245,8 @@ fig_workers.add_trace(go.Scattermapbox(
     textposition="top right",
     textfont=dict(color="black")
 ))
-fig_workers.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor="#0d1117", font=dict(color="white"))
+fig_workers.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0},
+                          paper_bgcolor="#0d1117", font=dict(color="white"))
 st.plotly_chart(fig_workers, use_container_width=True)
 
 if st.button("📢 Alert Workers Near Restricted Area"):
