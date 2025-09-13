@@ -134,67 +134,50 @@ with col_b:
     fig_slope.add_hrect(y0=slope_high, y1=slope_max, fillcolor="red", opacity=0.2, line_width=0, annotation_text="High", annotation_position="left")
     st.plotly_chart(fig_slope, use_container_width=True)
 
-# -------------------- THERMAL HEATMAP (Improved) --------------------
+# -------------------- THERMAL HEATMAP --------------------
 st.subheader("🌡 Thermal Heatmap with Sensor Hotspots")
-
-# Generate heatmap data (0–100 risk values)
-heat_data = np.random.normal(loc=current_risk, scale=15, size=(20, 20))
+heat_data = np.random.normal(loc=current_risk, scale=15, size=(100, 100))  # resized to 0–100
 heat_data = np.clip(heat_data, 0, 100)
 
-# Example sensor positions
-sensors = {
-    "Sensor1": (3, 15),
-    "Sensor2": (5, 12),
-    "Sensor3": (16, 5),
-    "Sensor4": (18, 14),
-    "Sensor5": (10, 8),
-    "Sensor6": (14, 6),
-}
+heat_fig = px.imshow(
+    heat_data,
+    color_continuous_scale="plasma",
+    origin="lower",
+    aspect="auto",
+    labels=dict(color="Temperature / Risk Level"),
+    title="Thermal Activity Heatmap",
+    zmin=0, zmax=100
+)
 
-# Create heatmap
-heat_fig = go.Figure(data=go.Heatmap(
-    z=heat_data,
-    colorscale="Plasma",
-    zmin=0, zmax=100,
-    colorbar=dict(
+sensor_x = np.random.randint(0, 100, 6)
+sensor_y = np.random.randint(0, 100, 6)
+heat_fig.add_trace(go.Scatter(
+    x=sensor_x, y=sensor_y,
+    mode="markers+text",
+    marker=dict(size=12, color="white", symbol="x"),
+    text=[f"Sensor {i+1}" for i in range(6)],
+    textposition="top center"
+))
+
+low_threshold = np.percentile(heat_data, 30)
+high_threshold = np.percentile(heat_data, 70)
+
+heat_fig.add_annotation(x=102, y=low_threshold, text="Low Risk", showarrow=False, font=dict(color="green", size=12))
+heat_fig.add_annotation(x=102, y=high_threshold, text="High Risk", showarrow=False, font=dict(color="red", size=12))
+
+heat_fig.update_layout(
+    template="plotly_dark",
+    plot_bgcolor="#0d1117",
+    paper_bgcolor="#0d1117",
+    xaxis=dict(range=[0,100]),
+    yaxis=dict(range=[0,100]),
+    margin=dict(r=80),
+    coloraxis_colorbar=dict(
         title="Temperature / Risk Level",
         tickvals=[0, 50, 100],
         ticktext=["Low", "Medium", "High"]
     )
-))
-
-# Add numbers inside each cell
-for i in range(heat_data.shape[0]):
-    for j in range(heat_data.shape[1]):
-        heat_fig.add_annotation(
-            x=j, y=i,
-            text=str(int(heat_data[i][j])),
-            showarrow=False,
-            font=dict(color="white", size=8)
-        )
-
-# Overlay sensor markers
-for name, (x, y) in sensors.items():
-    heat_fig.add_trace(go.Scatter(
-        x=[x], y=[y],
-        mode="markers+text",
-        marker=dict(size=12, color="white", symbol="x"),
-        text=[name],
-        textposition="top center",
-        name=name
-    ))
-
-# Layout adjustments
-heat_fig.update_layout(
-    title="Thermal Activity Heatmap",
-    template="plotly_dark",
-    plot_bgcolor="#0d1117",
-    paper_bgcolor="#0d1117",
-    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-    yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", showticklabels=False),
-    height=600
 )
-
 st.plotly_chart(heat_fig, use_container_width=True)
 
 # -------------------- ALERTS LOG --------------------
@@ -290,13 +273,9 @@ for i, row in worker_positions.iterrows():
     if dist_now < dist_prev:  # Worker moved closer
         danger_workers.append(worker)
 
-# Display results + NEW ALERT BUTTON
+# Display results
 if danger_workers:
     st.error(f"🚨 Danger Prediction: {', '.join(danger_workers)} are moving TOWARD the restricted zone!")
-    
-    # New Trigger Alert Button
-    if st.button("📢 TRIGGER ALERT (Danger Zone)", key="danger_alert"):
-        st.success(f"✅ Alert sent to workers: {', '.join(danger_workers)} (Simulated in demo mode)")
 else:
     st.success("✅ No workers are moving toward danger areas.")
 
