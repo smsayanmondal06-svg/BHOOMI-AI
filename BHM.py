@@ -161,6 +161,26 @@ heat_fig.add_trace(go.Scatter(
 
 low_threshold = np.percentile(heat_data, 30)
 high_threshold = np.percentile(heat_data, 70)
+heat_fig.add_hrect(y0=0, y1=low_threshold, fillcolor="green", opacity=0.1,
+                   line_width=0, annotation_text="Low Risk", annotation_position="bottom left")
+heat_fig.add_hrect(y0=high_threshold, y1=100, fillcolor="red", opacity=0.1,
+                   line_width=0, annotation_text="High Risk", annotation_position="top left")
+
+# 🔥 Add High/Low to colorbar
+heat_fig.update_layout(
+    template="plotly_dark",
+    plot_bgcolor="#0d1117",
+    paper_bgcolor="#0d1117",
+    coloraxis_colorbar=dict(
+        title="Temperature / Risk Level",
+        tickvals=[0, 50, 100],
+        ticktext=["Low", "Medium", "High"]
+    )
+)
+
+st.plotly_chart(heat_fig, use_container_width=True)
+
+    
 
 # Labels moved to right side in same plane
 heat_fig.add_hrect(
