@@ -169,9 +169,9 @@ heat_fig.update_layout(
     template="plotly_dark",
     plot_bgcolor="#0d1117",
     paper_bgcolor="#0d1117",
-    xaxis=dict(range=[0,40]),
-    yaxis=dict(range=[0,80]),
-    margin=dict(r=80),
+    xaxis=dict(range=[0,80]),
+    yaxis=dict(range=[0,40]),
+    margin=dict(r=40),
     coloraxis_colorbar=dict(
         title="Temperature / Risk Level",
         tickvals=[0, 50, 100],
