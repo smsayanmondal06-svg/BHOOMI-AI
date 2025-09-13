@@ -136,7 +136,7 @@ with col_b:
 
 # -------------------- THERMAL HEATMAP --------------------
 st.subheader("🌡 Thermal Heatmap with Sensor Hotspots")
-heat_data = np.random.normal(loc=current_risk, scale=15, size=(40, 80))  # resized to 0–100
+heat_data = np.random.normal(loc=current_risk, scale=15, size=(100, 100))  # resized to 0–100
 heat_data = np.clip(heat_data, 0, 100)
 
 heat_fig = px.imshow(
@@ -169,9 +169,9 @@ heat_fig.update_layout(
     template="plotly_dark",
     plot_bgcolor="#0d1117",
     paper_bgcolor="#0d1117",
-    xaxis=dict(range=[0,80]),
-    yaxis=dict(range=[0,40]),
-    margin=dict(r=40),
+    xaxis=dict(range=[0,100]),
+    yaxis=dict(range=[0,100]),
+    margin=dict(r=80),
     coloraxis_colorbar=dict(
         title="Temperature / Risk Level",
         tickvals=[0, 50, 100],
