@@ -140,7 +140,7 @@ with col_b:
 st.subheader("🌡 Thermal Heatmap with Sensor Hotspots")
 
 # Generate heatmap data
-heat_data = np.random.normal(loc=current_risk, scale=15, size=(20, 20))
+heat_data = np.random.normal(loc=current_risk, scale=15, size=(100, 100))
 heat_data = np.clip(heat_data, 0, 100)
 
 # Create heatmap with fewer color steps (e.g., 5 discrete bins)
@@ -163,8 +163,8 @@ heat_fig = px.imshow(
 )
 
 # Random sensor points
-sensor_x = np.random.randint(0, 20, 6)
-sensor_y = np.random.randint(0, 20, 6)
+sensor_x = np.random.randint(0, 100, 6)
+sensor_y = np.random.randint(0, 100, 6)
 heat_fig.add_trace(go.Scatter(
     x=sensor_x, y=sensor_y,
     mode="markers+text",
