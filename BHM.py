@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
-import time
+from streamlit_autorefresh import st_autorefresh
 
 # -------------------- PAGE CONFIG --------------------
 st.set_page_config(page_title="BHOOMI Rockfall AI", page_icon="🤖", layout="wide")
@@ -97,7 +97,7 @@ gauge = go.Figure(go.Indicator(
 gauge.update_layout(paper_bgcolor="#0d1117", font={"color":"#00FFEF"})
 st.plotly_chart(gauge, use_container_width=True)
 
-# -------------------- VIBRATION + SLOPE (Dynamic Zones) --------------------
+# -------------------- VIBRATION + SLOPE --------------------
 col_a, col_b = st.columns(2)
 
 # --- Vibration ---
@@ -134,52 +134,57 @@ with col_b:
     fig_slope.add_hrect(y0=slope_high, y1=slope_max, fillcolor="red", opacity=0.2, line_width=0, annotation_text="High", annotation_position="left")
     st.plotly_chart(fig_slope, use_container_width=True)
 
-# -------------------- ENLARGED THERMAL HEATMAP WITH BIGGER HIT BLOCKS --------------------
-st.subheader("🌡 Thermal Heatmap with Enlarged Sensor Hit Blocks")
-heat_data = np.random.normal(loc=current_risk, scale=15, size=(200, 200))  # Enlarged resolution for detail
+# -------------------- THERMAL HEATMAP (Simplified) --------------------
+st.subheader("🌡 Thermal Heatmap with Sensor Hotspots")
+
+# Generate heatmap data
+heat_data = np.random.normal(loc=current_risk, scale=15, size=(20, 20))
 heat_data = np.clip(heat_data, 0, 100)
 
-heat_fig = px.imshow(
-    heat_data,
-    color_continuous_scale="plasma",
-    origin="lower",
-    aspect="auto",
-    labels=dict(color="Temperature / Risk Level"),
-    title="Thermal Activity Heatmap (Enlarged Hits)",
-    zmin=0, zmax=100
-)
+# Example sensor positions
+sensors = {
+    "Sensor1": (3, 15),
+    "Sensor2": (5, 12),
+    "Sensor3": (16, 5),
+    "Sensor4": (18, 14),
+    "Sensor5": (10, 8),
+    "Sensor6": (14, 6),
+}
 
-sensor_x = np.random.randint(0, 200, 6)  # Scaled to new size
-sensor_y = np.random.randint(0, 200, 6)
-heat_fig.add_trace(go.Scatter(
-    x=sensor_x, y=sensor_y,
-    mode="markers+text",
-    marker=dict(size=20, color="white", symbol="x", line=dict(width=3, color="yellow")),  # Enlarged + glow
-    text=[f"Sensor {i+1}" for i in range(6)],
-    textposition="top center",
-    textfont=dict(color="yellow", size=10)
-))
-
-low_threshold = np.percentile(heat_data, 30)
-high_threshold = np.percentile(heat_data, 70)
-
-heat_fig.add_annotation(x=205, y=low_threshold, text="Low Risk", showarrow=False, font=dict(color="green", size=12))
-heat_fig.add_annotation(x=205, y=high_threshold, text="High Risk", showarrow=False, font=dict(color="red", size=12))
-
-heat_fig.update_layout(
-    template="plotly_dark",
-    plot_bgcolor="#0d1117",
-    paper_bgcolor="#0d1117",
-    xaxis=dict(range=[0,200]),
-    yaxis=dict(range=[0,200]),
-    height=700,  # Taller for enlargement
-    margin=dict(r=80),
-    coloraxis_colorbar=dict(
-        title="Temperature / Risk Level",
+# Heatmap
+heat_fig = go.Figure(data=go.Heatmap(
+    z=heat_data,
+    colorscale="Viridis",
+    zmin=0, zmax=100,
+    colorbar=dict(
+        title="Risk Level",
         tickvals=[0, 50, 100],
         ticktext=["Low", "Medium", "High"]
     )
+))
+
+# Overlay sensors
+for name, (x, y) in sensors.items():
+    heat_fig.add_trace(go.Scatter(
+        x=[x], y=[y],
+        mode="markers+text",
+        marker=dict(size=14, color="white", symbol="x"),
+        text=[name],
+        textposition="top center",
+        name=name
+    ))
+
+# Layout
+heat_fig.update_layout(
+    title="Thermal Activity Heatmap",
+    template="plotly_dark",
+    plot_bgcolor="#0d1117",
+    paper_bgcolor="#0d1117",
+    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    yaxis=dict(showgrid=False, zeroline=False, autorange="reversed", showticklabels=False),
+    height=500
 )
+
 st.plotly_chart(heat_fig, use_container_width=True)
 
 # -------------------- ALERTS LOG --------------------
@@ -244,40 +249,38 @@ if st.button("📢 Alert Workers Near Restricted Area"):
     else:
         st.info("ℹ No workers currently near restricted areas to alert.")
 
-# -------------------- WORKER MOVEMENT DIRECTION (Danger Prediction) --------------------
+# -------------------- WORKER MOVEMENT DIRECTION --------------------
 st.subheader("🧭 Worker Danger Movement Prediction")
 
-# Simulate previous positions (for demo, random offset)
 worker_positions_prev = pd.DataFrame({
     "Worker": worker_positions["Worker"],
     "lat": worker_positions["lat"] + np.random.uniform(-0.002, 0.002, num_workers),
     "lon": worker_positions["lon"] + np.random.uniform(-0.002, 0.002, num_workers)
 })
 
-# Fixed haversine function
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  # Earth radius km
+    R = 6371
     dlat = np.radians(lat2 - lat1)
     dlon = np.radians(lon2 - lon1)
-    a = np.sin(dlat/2)**2 + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlon/2)**2
-    return 2 * R * np.arcsin(np.sqrt(a))
+    a = np.sin(dlat/2)*2 + np.cos(np.radians(lat1))*np.cos(np.radians(lat2))*np.sin(dlon/2)*2
+    return 2*R*np.arcsin(np.sqrt(a))
 
-# Check movement toward danger zone
 danger_workers = []
 for i, row in worker_positions.iterrows():
     worker = row["Worker"]
     lat_now, lon_now = row["lat"], row["lon"]
-    lat_prev, lon_prev = worker_positions_prev.loc[worker_positions_prev["Worker"] == worker, ["lat", "lon"]].iloc[0]
+    lat_prev, lon_prev = worker_positions_prev.loc[i, "lat"], worker_positions_prev.loc[i, "lon"]
 
     dist_prev = haversine(lat_prev, lon_prev, restricted_zone["lat"], restricted_zone["lon"])
     dist_now = haversine(lat_now, lon_now, restricted_zone["lat"], restricted_zone["lon"])
 
-    if dist_now < dist_prev:  # Worker moved closer
+    if dist_now < dist_prev:
         danger_workers.append(worker)
 
-# Display results
 if danger_workers:
     st.error(f"🚨 Danger Prediction: {', '.join(danger_workers)} are moving TOWARD the restricted zone!")
+    if st.button("📢 TRIGGER ALERT (Danger Zone)", key="danger_alert"):
+        st.success(f"✅ Alert sent to workers: {', '.join(danger_workers)} (Simulated in demo mode)")
 else:
     st.success("✅ No workers are moving toward danger areas.")
 
@@ -297,18 +300,9 @@ fig_forecast = px.bar(df_forecast, x="Hour", y="Forecast Risk %",
 fig_forecast.update_layout(template="plotly_dark", plot_bgcolor="#0d1117", paper_bgcolor="#0d1117")
 st.plotly_chart(fig_forecast, use_container_width=True)
 
-# -------------------- REFRESH SIMULATION --------------------
-with st.sidebar:
-    st.header("🔄 Refresh")
-    refresh_time = st.slider("Auto-refresh interval (seconds)", 10, 120, 60)
-    if st.button("Refresh Now"):
-        st.rerun()
-    # Simple countdown
-    for remaining in range(refresh_time, 0, -1):
-        st.write(f"Next refresh in: {remaining}s")
-        time.sleep(1)
-        st.rerun()
+# -------------------- AUTO REFRESH --------------------
+st_autorefresh(interval=60*1000, key="auto_refresh")
 
 # -------------------- FOOTER --------------------
 st.markdown("---")
-st.markdown("🧠 BHOOMI Safety Core v3.2 | Live + CSV + Alerts + Forecast + Enlarged Heatmap + GeoMap | TEAM BHOOMI ⚡")
+st.markdown("🧠 BHOOMI Safety Core v3.1 | Live + CSV + Alerts + Forecast + Heatmap + GeoMap | TEAM BHOOMI ⚡")
