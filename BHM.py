@@ -135,11 +135,21 @@ with col_b:
     fig_slope.add_hrect(y0=slope_high, y1=slope_max, fillcolor="red", opacity=0.2, line_width=0, annotation_text="High", annotation_position="left")
     st.plotly_chart(fig_slope, use_container_width=True)
 
-# -------------------- THERMAL HEATMAP --------------------
-st.subheader("🌡 Thermal Heatmap")
+# -------------------- THERMAL HEATMAP WITH SENSORS --------------------
+st.subheader("🌡 Thermal Heatmap with Sensors")
 
 heat_data = np.random.normal(loc=current_risk, scale=15, size=(20, 20))
 heat_data = np.clip(heat_data, 0, 100)
+
+# Sensor positions (x,y inside the heatmap grid)
+sensors = {
+    "S1": (3, 15),
+    "S2": (5, 12),
+    "S3": (16, 5),
+    "S4": (18, 14),
+    "S5": (10, 8),
+    "S6": (14, 6),
+}
 
 heat_fig = go.Figure(data=go.Heatmap(
     z=heat_data,
@@ -151,6 +161,17 @@ heat_fig = go.Figure(data=go.Heatmap(
         ticktext=["Low", "Medium", "High"]
     )
 ))
+
+# Add sensors inside heatmap
+for name, (x, y) in sensors.items():
+    heat_fig.add_trace(go.Scatter(
+        x=[x], y=[y],
+        mode="markers+text",
+        marker=dict(size=12, color="white", symbol="x"),
+        text=[name],
+        textposition="top center",
+        showlegend=False  # ✅ prevents extra labels in the legend
+    ))
 
 heat_fig.update_layout(
     title="Thermal Activity Heatmap",
@@ -238,7 +259,7 @@ worker_positions_prev = pd.DataFrame({
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371
     dlat = np.radians(lat2 - lat1)
-    dlon = np.radians(lon2 - lon1)
+    dlon = np.radians(lat2 - lon1)
     a = np.sin(dlat/2)*2 + np.cos(np.radians(lat1))*np.cos(np.radians(lat2))*np.sin(dlon/2)*2
     return 2*R*np.arcsin(np.sqrt(a))
 
