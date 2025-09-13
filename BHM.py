@@ -154,7 +154,7 @@ sensors_original = {
 }
 
 # Reverse sensor values: X -> (40 - X), Y -> (100 - Y)
-sensors = {name: (40 - x, 100 - y) for name, (x, y) in sensors_original.items()}
+sensors = {name: (80 - x, 40 - y) for name, (x, y) in sensors_original.items()}
 
 heat_fig = go.Figure(data=go.Heatmap(
     z=heat_data,
