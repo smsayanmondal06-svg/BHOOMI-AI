@@ -97,7 +97,7 @@ gauge = go.Figure(go.Indicator(
 gauge.update_layout(paper_bgcolor="#0d1117", font={"color":"#00FFEF"})
 st.plotly_chart(gauge, use_container_width=True)
 
-# -------------------- VIBRATION + SLOPE --------------------
+# -------------------- VIBRATION + SLOPE (Dynamic Zones) --------------------
 col_a, col_b = st.columns(2)
 
 # --- Vibration ---
@@ -259,22 +259,25 @@ if st.button("📢 Alert Workers Near Restricted Area"):
     else:
         st.info("ℹ No workers currently near restricted areas to alert.")
 
-# -------------------- WORKER MOVEMENT DIRECTION --------------------
+# -------------------- WORKER MOVEMENT DIRECTION (Danger Prediction) --------------------
 st.subheader("🧭 Worker Danger Movement Prediction")
 
+# Simulate previous positions (for demo, random offset)
 worker_positions_prev = pd.DataFrame({
     "Worker": worker_positions["Worker"],
     "lat": worker_positions["lat"] + np.random.uniform(-0.002, 0.002, num_workers),
     "lon": worker_positions["lon"] + np.random.uniform(-0.002, 0.002, num_workers)
 })
 
+# Function to calculate distance from restricted zone center
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371
+    R = 6371  # Earth radius km
     dlat = np.radians(lat2 - lat1)
     dlon = np.radians(lon2 - lon1)
     a = np.sin(dlat/2)*2 + np.cos(np.radians(lat1))*np.cos(np.radians(lat2))*np.sin(dlon/2)*2
     return 2*R*np.arcsin(np.sqrt(a))
 
+# Check movement toward danger zone
 danger_workers = []
 for i, row in worker_positions.iterrows():
     worker = row["Worker"]
@@ -284,11 +287,14 @@ for i, row in worker_positions.iterrows():
     dist_prev = haversine(lat_prev, lon_prev, restricted_zone["lat"], restricted_zone["lon"])
     dist_now = haversine(lat_now, lon_now, restricted_zone["lat"], restricted_zone["lon"])
 
-    if dist_now < dist_prev:
+    if dist_now < dist_prev:  # Worker moved closer
         danger_workers.append(worker)
 
+# Display results + NEW ALERT BUTTON
 if danger_workers:
     st.error(f"🚨 Danger Prediction: {', '.join(danger_workers)} are moving TOWARD the restricted zone!")
+    
+    # New Trigger Alert Button
     if st.button("📢 TRIGGER ALERT (Danger Zone)", key="danger_alert"):
         st.success(f"✅ Alert sent to workers: {', '.join(danger_workers)} (Simulated in demo mode)")
 else:
