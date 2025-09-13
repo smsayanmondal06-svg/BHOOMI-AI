@@ -195,7 +195,7 @@ heat_fig.update_layout(
     paper_bgcolor="#0d1117",
     coloraxis_colorbar=dict(
         title="Temperature / Risk Level",
-        tickvals=[0, 25, 50, 75, 100],
+        tickvals=[0, 50, 100],
         ticktext=["Low","Medium", "High"]
     )
 )
