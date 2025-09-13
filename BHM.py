@@ -180,8 +180,8 @@ heat_fig.update_layout(
     template="plotly_dark",
     plot_bgcolor="#0d1117",
     paper_bgcolor="#0d1117",
-    xaxis=dict(title="X Axis", range=[0, 40], showgrid=False, zeroline=False),
-    yaxis=dict(title="Y Axis", range=[0, 100], showgrid=False, zeroline=False),
+    xaxis=dict(title="X Axis", range=[0, 100], showgrid=False, zeroline=False),
+    yaxis=dict(title="Y Axis", range=[0, 40], showgrid=False, zeroline=False),
     height=600
 )
 
