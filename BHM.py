@@ -136,21 +136,25 @@ with col_b:
     st.plotly_chart(fig_slope, use_container_width=True)
 
 # -------------------- THERMAL HEATMAP WITH AXES + SENSORS --------------------
-st.subheader("🌡 Thermal Heatmap with Sensors (X=40, Y=100)")
+# -------------------- THERMAL HEATMAP WITH REVERSED SENSOR COORDS --------------------
+st.subheader("🌡 Thermal Heatmap with Sensors (Values Reversed)")
 
 # Heatmap data with Y=100 rows, X=40 columns
 heat_data = np.random.normal(loc=current_risk, scale=15, size=(100, 40))
 heat_data = np.clip(heat_data, 0, 100)
 
-# Sensor positions (X=0–40, Y=0–100)
-sensors = {
-    "S1": (3, 15),
-    "S2": (5, 12),
-    "S3": (16, 5),
-    "S4": (18, 14),
-    "S5": (14, 6),
-    "S6": (10, 8),
+# Original sensor positions (X=0–40, Y=0–100)
+sensors_original = {
+    "S1": (5, 90),
+    "S2": (10, 70),
+    "S3": (25, 30),
+    "S4": (35, 85),
+    "S5": (15, 50),
+    "S6": (30, 20),
 }
+
+# Reverse sensor values: X -> (40 - X), Y -> (100 - Y)
+sensors = {name: (40 - x, 100 - y) for name, (x, y) in sensors_original.items()}
 
 heat_fig = go.Figure(data=go.Heatmap(
     z=heat_data,
@@ -163,7 +167,7 @@ heat_fig = go.Figure(data=go.Heatmap(
     )
 ))
 
-# Add sensors
+# Add reversed sensors
 for name, (x, y) in sensors.items():
     heat_fig.add_trace(go.Scatter(
         x=[x], y=[y],
@@ -174,19 +178,18 @@ for name, (x, y) in sensors.items():
         showlegend=False
     ))
 
-# ✅ Axes X: 0–40, Y: 0–100
+# ✅ Normal axes (not flipped), but sensor values reversed
 heat_fig.update_layout(
-    title="Thermal Activity Heatmap",
+    title="Thermal Activity Heatmap (Reversed Sensor Values)",
     template="plotly_dark",
     plot_bgcolor="#0d1117",
     paper_bgcolor="#0d1117",
-    xaxis=dict(title="X Axis", range=[0, 100], showgrid=False, zeroline=False),
-    yaxis=dict(title="Y Axis", range=[0, 40], showgrid=False, zeroline=False),
+    xaxis=dict(title="X Axis", range=[0, 40], showgrid=False, zeroline=False),
+    yaxis=dict(title="Y Axis", range=[0, 100], showgrid=False, zeroline=False),
     height=600
 )
 
 st.plotly_chart(heat_fig, use_container_width=True)
-
 # -------------------- ALERTS LOG --------------------
 st.subheader("🚨 Alerts Log")
 alerts = df.tail(5).copy()
